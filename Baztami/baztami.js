@@ -94,6 +94,7 @@ function enregistrer_operation() {
     document.getElementById('dateOper').value = '';
 
     update_total();
+    
     affiche_operation(operation);
     modal_operation.classList.add('hidden');
 }
@@ -101,7 +102,7 @@ function enregistrer_operation() {
 function affiche_operation(transaction) {
     const card = document.createElement('div');
     card.className = `border-2 border-blue-900 rounded-3xl h-50 flex flex-col gap-2 p-4 items-center text-blue-900 ${transaction.type === 'revenu' ? 'bg-green-300' : 'bg-red-300'}`;
-    card.setAttribute("data-id", transaction.id); // utile aussi
+    card.setAttribute("data-id", transaction.id); 
 
     const symbole = transaction.type === 'revenu' ? '+' : '-';
 
