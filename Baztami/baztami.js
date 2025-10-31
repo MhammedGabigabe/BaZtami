@@ -16,6 +16,7 @@ const date_input = document.getElementById("dateOper");
 const modal_modifier = document.getElementById("modal-modifier");
 const btn_quitter_mod_modifier = document.getElementById("quitter-modal-modifier");
 
+
 btn_quitter_mod_modifier.addEventListener('click', () => {
     modal_modifier.classList.add('hidden');
 })
@@ -38,6 +39,20 @@ let card_supprimer = null;
 let id_supprimer = null;
 let card_modifier = null;
 let id_modifier = null;
+
+const data_stockee = localStorage.getItem("transactions");
+
+if (data_stockee) {
+  liste_transactions = JSON.parse(data_stockee);
+  liste_transactions.forEach(affiche_operation);
+  update_total();
+  id_operation = liste_transactions.length;
+}
+
+
+function sauvegarder_transactions() {
+    localStorage.setItem("transactions", JSON.stringify(liste_transactions));
+}
 
 function enregistrer_operation() {
 
@@ -70,6 +85,7 @@ function enregistrer_operation() {
     };
 
     liste_transactions.push(operation);
+    sauvegarder_transactions();
     id_operation++;
 
     document.getElementById('descri').value = '';
@@ -144,6 +160,7 @@ btn_confirmer_suppr.addEventListener('click', () => {
         liste_transactions = liste_transactions.filter(
             (transac) => transac.id !== id_supprimer
         )
+        sauvegarder_transactions();
         card_supprimer = null;
         id_supprimer = null;
         modal_supprimer.classList.add("hidden");
@@ -188,6 +205,7 @@ function modifier_operation() {
         date: nouvDate
     };
 
+    sauvegarder_transactions();
     card_modifier.querySelector(".desc").textContent = `Description : ${nouvDescri}`;
     card_modifier.querySelector(".mont").textContent = `Montant : ${nouvType === 'revenu' ? '+' : '-'} ${nouvMont} DH`;
     card_modifier.querySelector(".type").textContent = `Type : ${nouvType}`;
