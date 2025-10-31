@@ -13,6 +13,13 @@ const mont_input = document.getElementById("mont");
 const type_input = document.getElementById("type");
 const date_input = document.getElementById("dateOper");
 
+const modal_modifier = document.getElementById("modal-modifier");
+const btn_quitter_mod_modifier = document.getElementById("quitter-modal-modifier");
+
+btn_quitter_mod_modifier.addEventListener('click', () => {
+    modal_modifier.classList.add('hidden');
+})
+
 btn_ajouter.addEventListener("click", () => {
     modal_operation.classList.remove('hidden');
 });
@@ -29,6 +36,8 @@ let liste_transactions = [];
 let id_operation = 0;
 let card_supprimer = null;
 let id_supprimer = null;
+let card_modifier = null;
+let id_modifier = null;
 
 function enregistrer_operation() {
 
@@ -69,27 +78,30 @@ function enregistrer_operation() {
     document.getElementById('dateOper').value = '';
 
     affiche_operation(operation);
-
+    modal_operation.classList.add('hidden');
 }
 
 function affiche_operation(transaction) {
-
     const card = document.createElement('div');
-    card.className = `border-2 border-blue-900 rounded-3xl h-50 flex flex-col gap-2 p-4 items-center text-blue-900 ${transaction.type === 'revenu' ? 'bg-green-200' : 'bg-red-200'}`;
+    card.className = `border-2 border-blue-900 rounded-3xl h-50 flex flex-col gap-2 p-4 items-center text-blue-900 ${transaction.type === 'revenu' ? 'bg-green-300' : 'bg-red-300'}`;
+    card.setAttribute("data-id", transaction.id); // utile aussi
 
     const symbole = transaction.type === 'revenu' ? '+' : '-';
 
-    card.innerHTML = `<p>Description : ${transaction.description}</p>
-                        <p>Montant : ${symbole} ${transaction.montant} DH</p>
-                        <p>Type : ${transaction.type}</p>
-                        <p>Date : ${transaction.date}</p>
-                        <div class="flex gap-14">
-                            <button id="btn-modi-id-${transaction.id}"><i class="fa-regular fa-pen-to-square"></i></button>
-                            <button id="btn-supp-id-${transaction.id}"><i class="fa-solid fa-trash"></i></button>
-                        </div>`;
+    card.innerHTML = `
+        <p class="desc">Description : ${transaction.description}</p>
+        <p class="mont">Montant : ${symbole} ${transaction.montant} DH</p>
+        <p class="type">Type : ${transaction.type}</p>
+        <p class="date">Date : ${transaction.date}</p>
+        <div class="flex gap-14">
+            <button id="btn-modi-id-${transaction.id}"><i class="fa-regular fa-pen-to-square"></i></button>
+            <button id="btn-supp-id-${transaction.id}"><i class="fa-solid fa-trash"></i></button>
+        </div>
+    `;
 
     grid.appendChild(card);
 
+    // Bouton Supprimer
     const btn_affiche_modal_supp = card.querySelector(`#btn-supp-id-${transaction.id}`);
     btn_affiche_modal_supp.addEventListener('click', () => {
         modal_supprimer.classList.remove('hidden');
@@ -97,19 +109,98 @@ function affiche_operation(transaction) {
         id_supprimer = transaction.id;
     });
 
-    modal_operation.classList.add('hidden');
+    // Bouton Modifier
+    const btn_affiche_modifier = card.querySelector(`#btn-modi-id-${transaction.id}`);
+    btn_affiche_modifier.addEventListener('click', () => {
+        modal_modifier.classList.remove('hidden');
+        document.getElementById("descri-modif").value = transaction.description;
+        document.getElementById("mont-modif").value = transaction.montant;
+        document.getElementById("type-modif").value = transaction.type;
+        document.getElementById("date-modif").value = transaction.date;
+        id_modifier = transaction.id;
+        card_modifier = card;
+    });
 }
 
+// const btn_affiche_modal_modifier = card.querySelector(`#btn-modi-id-${transaction.id}`);
+// btn_affiche_modal_modifier.addEventListener('click', () => {
+//     modal_operation.querySelector("h2").textContent = "Effectuer votre modification"
+//     let modifier = document.createElement("button")
+//     modifier.textContent = "modifier"
+//     modifier.classList = "bg-green-500 text-white font-semibold py-2 rounded hover:bg-blue-600"
+//     let enregistre = document.getElementById("enregistrer")
+//     console.log(modal_operation)
+//     modal_operation.replaceChild(enregistre, modifier)
+
+//     modal_operation.classList.remove('hidden');
+
+// });
+
+
 btn_confirmer_suppr.addEventListener('click', () => {
-    if(card_supprimer && id_supprimer!== null){
+    if (card_supprimer && id_supprimer !== null) {
         card_supprimer.remove();
-        liste_transactions= liste_transactions.filter(
-            (op) => op.id !== id_supprimer
+        liste_transactions = liste_transactions.filter(
+            (transac) => transac.id !== id_supprimer
         )
         card_supprimer = null;
-        id_supprimer= null;
+        id_supprimer = null;
         modal_supprimer.classList.add("hidden");
     }
 });
+
+
+function modifier_operation() {
+
+    const nouvDescri = document.getElementById("descri-modif").value;
+    const nouvMont = document.getElementById("mont-modif").value;
+    const nouvType = document.getElementById("type-modif").value;
+    const nouvDate = document.getElementById("date-modif").value;
+
+    if (!nouvDescri || !nouvMont || !nouvDate) {
+        alert("Veuillez remplir tous les champs !");
+        return;
+    }
+
+    if (nouvMont <= 0) {
+        alert("Le montant doit être supérieur à 0 !");
+        return;
+    }
+
+    if (isNaN(nouvMont)) {
+        alert("Le montant doit être un nombre valide !");
+        return;
+    }
+
+
+    const index = liste_transactions.findIndex(tran => tran.id === id_modifier);
+    if (index === -1) {
+        alert("Transaction introuvable !");
+        return;
+    }
+
+    liste_transactions[index] = {
+        ...liste_transactions[index],
+        description: nouvDescri,
+        montant: nouvMont,
+        type: nouvType,
+        date: nouvDate
+    };
+
+
+    card_modifier.querySelector(".desc").textContent = `Description : ${nouvDescri}`;
+    card_modifier.querySelector(".mont").textContent = `Montant : ${nouvType === 'revenu' ? '+' : '-'} ${nouvMont} DH`;
+    card_modifier.querySelector(".type").textContent = `Type : ${nouvType}`;
+    card_modifier.querySelector(".date").textContent = `Date : ${nouvDate}`;
+
+
+
+    card_modifier.className = `border-2 border-blue-900 rounded-3xl h-50 flex flex-col gap-2 p-4 items-center text-blue-900 ${nouvType === 'revenu' ? 'bg-green-300' : 'bg-red-300'}`;
+
+    modal_modifier.classList.add('hidden');
+    card_modifier = null;
+    id_modifier = null;
+}
+
 
 
