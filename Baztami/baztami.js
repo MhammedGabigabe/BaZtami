@@ -77,6 +77,7 @@ function enregistrer_operation() {
     document.getElementById('type').value = 'revenu';
     document.getElementById('dateOper').value = '';
 
+    update_total();
     affiche_operation(operation);
     modal_operation.classList.add('hidden');
 }
@@ -147,6 +148,7 @@ btn_confirmer_suppr.addEventListener('click', () => {
         id_supprimer = null;
         modal_supprimer.classList.add("hidden");
     }
+    update_total();
 });
 
 
@@ -172,7 +174,6 @@ function modifier_operation() {
         return;
     }
 
-
     const index = liste_transactions.findIndex(tran => tran.id === id_modifier);
     if (index === -1) {
         alert("Transaction introuvable !");
@@ -187,19 +188,46 @@ function modifier_operation() {
         date: nouvDate
     };
 
-
     card_modifier.querySelector(".desc").textContent = `Description : ${nouvDescri}`;
     card_modifier.querySelector(".mont").textContent = `Montant : ${nouvType === 'revenu' ? '+' : '-'} ${nouvMont} DH`;
     card_modifier.querySelector(".type").textContent = `Type : ${nouvType}`;
     card_modifier.querySelector(".date").textContent = `Date : ${nouvDate}`;
-
-
 
     card_modifier.className = `border-2 border-blue-900 rounded-3xl h-50 flex flex-col gap-2 p-4 items-center text-blue-900 ${nouvType === 'revenu' ? 'bg-green-300' : 'bg-red-300'}`;
 
     modal_modifier.classList.add('hidden');
     card_modifier = null;
     id_modifier = null;
+
+    update_total();
+}
+
+function update_total(){
+    const  total_rev = document.getElementById("total-rev");
+    const total_dep = document.getElementById("total-dep");
+    const solde = document.getElementById("solde");
+
+    let revenu = 0;
+    let depense = 0;
+    let sol = 0;
+
+    for(let i = 0; i< liste_transactions.length;i++){
+        if(liste_transactions[i].type == 'revenu'){
+            revenu+= Number(liste_transactions[i].montant) ;
+        }else{
+            depense+=Number(liste_transactions[i].montant);
+        }
+    }
+    
+    sol= revenu-depense;
+    const s=document.getElementById("s");
+    if(sol < 0){
+        solde.classList.remove('text-[#40db7a]');
+        s.classList.add('text-red-400');
+    }
+    solde.textContent= sol;
+    total_rev.textContent= revenu;
+    total_dep.textContent= depense;
 }
 
 
